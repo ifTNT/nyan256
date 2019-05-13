@@ -33,8 +33,8 @@ def v_(x): #Index mapping of lightness
 #Begin image proccessing
 #=========================
 img_bgr = cv2.imread('test.png')
-#plt.imshow(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB))
-#plt.show()
+#img_blur = cv2.GaussianBlur(img_bgr, (3, 3), 0)
+
 print(img_bgr.shape)
 
 img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV).astype(int)
@@ -44,7 +44,7 @@ grayscale_threshold = 40
 #Convert to index of vga color plate in HSV color space
 for i,row in enumerate(img_hsv):
     for j,v in enumerate(row):
-        if(v[1]<=grayscale_threshold): #grayscale
+        if(v[1]<=grayscale_threshold or v[2]<=grayscale_threshold): #grayscale
             img_hsv[i][j] = np.array([512,512,round(v[2]/17)])
         else:
             img_hsv[i][j] = np.array([h_[v[0]], s_(v[1]), v_(v[2])])
