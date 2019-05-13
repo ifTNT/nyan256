@@ -21,3 +21,19 @@ or execute `pip install -r requirement.txt` in root of this project.
 
 ## Author / License
 ifTNT @2019 / MIT
+
+## Priciple
+
+A VGA256 color plate may looks like  
+![vga256](https://i.imgur.com/U0ux7Xt.png)
+- 0x00 - 0x0F: Traditional 16 colors
+- 0x10 - 0x1F: Grayscale
+- 0x20 - 0xF7: Real 216 color
+- 0xF8 - 0xFF: Unused
+
+If rearranging segment 0x20-0xF7 with each row containing 24-colors. We will get the following color plate:  
+![r256](https://i.imgur.com/3Ey4DSz.png)
+  
+I guessed it's a HSV color space. Luckly, I'm approximately right.  
+So the next step is restrict normal HSV color space to this 24 * 3 * 3 HSV color space.  
+And you'll get a nicely converted picture in VGA256-color mode.
