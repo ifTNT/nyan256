@@ -32,7 +32,7 @@ def v_(x): #Index mapping of lightness
 #=========================
 #Begin image proccessing
 #=========================
-img_bgr = cv2.imread('test.jpg')
+img_bgr = cv2.imread('test.png')
 #plt.imshow(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB))
 #plt.show()
 print(img_bgr.shape)
