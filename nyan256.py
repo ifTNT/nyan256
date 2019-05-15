@@ -32,12 +32,17 @@ def v_(x): #Index mapping of lightness
 #=========================
 #Begin image proccessing
 #=========================
-img_bgr = cv2.imread('test.png')
+img_bgra = cv2.imread('test.png', cv2.IMREAD_UNCHANGED)
+if(img_bgra.shape[2]==4):
+    img_alpha = img_bgra[:,:,3]
+else:
+    img_alpha = np.ones(shape=img_bgra.shape[0:2])*255
 #img_blur = cv2.GaussianBlur(img_bgr, (3, 3), 0)
 
-print(img_bgr.shape)
+print(img_alpha.tolist())
 
-img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV).astype(int)
+
+img_hsv = cv2.cvtColor(img_bgra, cv2.COLOR_BGR2HSV).astype(int)
 
 grayscale_threshold = 40
 
@@ -53,10 +58,13 @@ for i,row in enumerate(img_hsv):
 img_bin = np.ndarray(shape=img_hsv.shape[0:2], dtype=np.uint8)
 for i,row in enumerate(img_hsv):
     for j,v in enumerate(row):
-        if(v[0]==512 and v[1]==512): #grayscale
-            img_bin[i][j] = v[2]+0x10
+        if(img_alpha[i][j]==0):
+            img_bin[i][j] = 255 #Define transparent in unused value
         else:
-            img_bin[i][j] = ((v[2]*3)+v[1])*24+v[0]+0x20
+            if(v[0]==512 and v[1]==512): #grayscale
+                img_bin[i][j] = v[2]+0x10
+            else:
+                img_bin[i][j] = ((v[2]*3)+v[1])*24+v[0]+0x20
 img_bin = img_bin.flatten()
         
 #Convert to value of vga color plate in HSV color space
@@ -68,10 +76,13 @@ for i,row in enumerate(img_hsv):
             img_hsv[i][j] = np.array([vga_hue[v[0]], vga_sat[v[1]], vga_lightness[v[2]]])
 img_hsv = img_hsv.astype(np.uint8)
 img_bgr = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR)
+img_alpha = img_alpha.reshape(img_alpha.shape[0], img_alpha.shape[1], 1)
+print(img_bgr.shape, img_alpha.shape)
+img_bgra = np.concatenate((img_bgr, img_alpha), axis=2)
 print(img_bin)
 
 #Write output file
-cv2.imwrite('output.png', img_bgr)
+cv2.imwrite('output.png', img_bgra)
 
 outFile = open("test.bin", "wb")
 outFile.write(bytearray(img_bin))
