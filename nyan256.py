@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 import re
+from math import ceil
 
 #============================================
 #Extract color mapping from VGA color plate
@@ -15,7 +16,18 @@ plate_bgr = cv2.imread('vga256color_plate_1px.png')
 plate_hsv = cv2.cvtColor(plate_bgr, cv2.COLOR_BGR2HSV)
 
 vga_hue = np.transpose(plate_hsv[1])[0].tolist()
-h_ = [(round(i/9)+8)%20 for i in range(180)] #Index mapping of hue
+hue_sorted = vga_hue+[180]
+hue_sorted.sort()
+
+def h_(x):
+    rtval = 0;
+    for i in range(len(hue_sorted)-1):
+        if(x>=hue_sorted[i] and x<hue_sorted[i+1]):
+            rtval = i+round((x-hue_sorted[i])/(hue_sorted[i+1]-hue_sorted[i]))
+            break
+    return (rtval+8)%(len(hue_sorted)-1)
+
+#h_ = [(round(i/9)+8)%24 for i in range(180)] #Index mapping of hue
 
 vga_sat = [255, 129, 73]
 def s_(x): #Index mapping of saturation
@@ -54,7 +66,7 @@ for i,row in enumerate(img_hsv):
         if(v[1]<=grayscale_threshold or v[2]<=grayscale_threshold): #grayscale
             img_hsv[i][j] = np.array([512,512,round(v[2]/17)])
         else:
-            img_hsv[i][j] = np.array([h_[v[0]], s_(v[1]), v_(v[2])])
+            img_hsv[i][j] = np.array([h_(v[0]), s_(v[1]), v_(v[2])])
 
 #Map the binary value
 img_bin = np.ndarray(shape=img_hsv.shape[0:2], dtype=np.uint8)
