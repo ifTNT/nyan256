@@ -3,6 +3,8 @@
 from cv2 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
+import re
 
 #============================================
 #Extract color mapping from VGA color plate
@@ -32,7 +34,7 @@ def v_(x): #Index mapping of lightness
 #=========================
 #Begin image proccessing
 #=========================
-img_bgra = cv2.imread('test.png', cv2.IMREAD_UNCHANGED)
+img_bgra = cv2.imread(sys.argv[1], cv2.IMREAD_UNCHANGED)
 if(img_bgra.shape[2]==4):
     img_alpha = img_bgra[:,:,3]
 else:
@@ -53,7 +55,7 @@ for i,row in enumerate(img_hsv):
             img_hsv[i][j] = np.array([512,512,round(v[2]/17)])
         else:
             img_hsv[i][j] = np.array([h_[v[0]], s_(v[1]), v_(v[2])])
-        
+
 #Map the binary value
 img_bin = np.ndarray(shape=img_hsv.shape[0:2], dtype=np.uint8)
 for i,row in enumerate(img_hsv):
@@ -66,7 +68,7 @@ for i,row in enumerate(img_hsv):
             else:
                 img_bin[i][j] = ((v[2]*3)+v[1])*24+v[0]+0x20
 img_bin = img_bin.flatten()
-        
+
 #Convert to value of vga color plate in HSV color space
 for i,row in enumerate(img_hsv):
     for j,v in enumerate(row):
@@ -84,6 +86,6 @@ print(img_bin)
 #Write output file
 cv2.imwrite('output.png', img_bgra)
 
-outFile = open("test.bin", "wb")
+outFile = open(re.sub(r'\..+$', '.bin',sys.argv[1]), "wb")
 outFile.write(bytearray(img_bin))
 outFile.close()
