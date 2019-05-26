@@ -8,7 +8,7 @@ Original image:
 Converted image:  
 ![nyyyyyan](https://github.com/ifTNT/nyan256/raw/master/output.png)  
 Disply in dosbox:  (use [MODE13H](https://github.com/ifTNT/MODE13H))  
-![anny](https://github.com/ifTNT/nyan256/raw/master/dosbox.png)  
+![anny](https://github.com/ifTNT/nyan256/raw/master/dosbox.png) 
 
 **With generated pixel-by-pixel binary file**
 
@@ -21,6 +21,13 @@ or execute `pip install -r requirement.txt` in root of this project.
 
 ## Author / License
 ifTNT @2019 / MIT
+
+## Benchmark
+RGB_24bits_palette_color_test_chart (from [Wikipedia](https://en.wikipedia.org/wiki/List_of_monochrome_and_RGB_palettes#/media/File:RGB_24bits_palette_color_test_chart.png)):  
+![24bit](https://upload.wikimedia.org/wikipedia/commons/b/b8/RGB_24bits_palette_color_test_chart.png)
+
+Converted image:  
+![24bit_256](https://github.com/ifTNT/nyan256/raw/master/RGB_24bits_256.png)
 
 ## Priciple
 

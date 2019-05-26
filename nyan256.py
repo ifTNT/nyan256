@@ -63,13 +63,13 @@ else:
 
 img_hsv = cv2.cvtColor(img_bgra, cv2.COLOR_BGR2HSV).astype(int)
 
-grayscale_threshold = 40
+grayscale_threshold = 60
 
 #Convert to index of vga color plate in HSV color space
 for i,row in enumerate(img_hsv):
     for j,v in enumerate(row):
         if(v[1]<=grayscale_threshold or v[2]<=grayscale_threshold): #grayscale
-            img_hsv[i][j] = np.array([512,512,round(v[2]/17)])
+            img_hsv[i][j] = np.array([512,512,round(float(v[2])*15/255)])
         else:
             candidate_axis = [h_(v[0])]+[s_(v[1])]+[v_(v[2])]
             candidate = np.zeros((8,3), dtype=int)
@@ -81,11 +81,11 @@ for i,row in enumerate(img_hsv):
             #Calculate distance in HSV color space
             distance = []
             for k in candidate:
-                dh = min(abs(v[0]-vga_hue[k[0]]), 180-abs(v[0]-vga_hue[k[0]]))
-                ds = abs(v[1]-vga_sat[k[1]])
-                dv = abs(v[2]-vga_lightness[k[2]])
-                #distance.append(sqrt(dh*dh+ds*ds+dv*dv)) #Euclidean distance
-                distance.append(max(dh, ds, dv)) #Chebyshev distance
+                dh = 1 * min(abs(v[0]-vga_hue[k[0]]), 180-abs(v[0]-vga_hue[k[0]]))
+                ds = 1 * abs(v[1]-vga_sat[k[1]])
+                dv = 1 * abs(v[2]-vga_lightness[k[2]])
+                distance.append(sqrt(dh*dh+ds*ds+dv*dv)) #Euclidean distance
+                #distance.append(max(dh, ds, dv)) #Chebyshev distance
             
             #Pick the cantidate that have minimal distance
             candidate_index = 0
