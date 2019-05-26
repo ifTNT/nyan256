@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 import re
-from math import ceil
+from math import ceil, sqrt
 
 #============================================
 #Extract color mapping from VGA color plate
@@ -23,25 +23,31 @@ def h_(x):
     rtval = 0;
     for i in range(len(hue_sorted)-1):
         if(x>=hue_sorted[i] and x<hue_sorted[i+1]):
-            rtval = i+round((x-hue_sorted[i])/(hue_sorted[i+1]-hue_sorted[i]))
+            #rtval = i+round((x-hue_sorted[i])/(hue_sorted[i+1]-hue_sorted[i]))
+            rtval = np.array([i, i+1])
             break
-    return (rtval+8)%(len(hue_sorted)-1)
+    rtval = (rtval+8)%(len(hue_sorted)-1)
+    return rtval.tolist()
 
 #h_ = [(round(i/9)+8)%24 for i in range(180)] #Index mapping of hue
 
 vga_sat = [255, 129, 73]
 def s_(x): #Index mapping of saturation
     if(x>vga_sat[1]):
-        return round((vga_sat[0]-x)/(vga_sat[0]-vga_sat[1]))
+        return [0, 1]
+        #return round((vga_sat[0]-x)/(vga_sat[0]-vga_sat[1]))
     else:
-        return round((vga_sat[1]-x)/(vga_sat[1]-0))+1
+        return [1, 2]
+        #return round((vga_sat[1]-x)/(vga_sat[1]-0))+1
 
 vga_lightness = [255, 113, 65]
 def v_(x): #Index mapping of lightness
     if(x>vga_lightness[1]):
-        return round((vga_lightness[0]-x)/(vga_lightness[0]-vga_lightness[1]))
+        return [0, 1]
+        #return round((vga_lightness[0]-x)/(vga_lightness[0]-vga_lightness[1]))
     else:
-        return round((vga_lightness[1]-x)/(vga_lightness[1]-0))+1
+        return [1, 2]
+        #return round((vga_lightness[1]-x)/(vga_lightness[1]-0))+1
 
 #=========================
 #Begin image proccessing
@@ -53,8 +59,7 @@ else:
     img_alpha = np.ones(shape=img_bgra.shape[0:2])*255
 #img_blur = cv2.GaussianBlur(img_bgr, (3, 3), 0)
 
-print(img_alpha.tolist())
-
+#print(img_alpha.tolist())
 
 img_hsv = cv2.cvtColor(img_bgra, cv2.COLOR_BGR2HSV).astype(int)
 
@@ -66,7 +71,30 @@ for i,row in enumerate(img_hsv):
         if(v[1]<=grayscale_threshold or v[2]<=grayscale_threshold): #grayscale
             img_hsv[i][j] = np.array([512,512,round(v[2]/17)])
         else:
-            img_hsv[i][j] = np.array([h_(v[0]), s_(v[1]), v_(v[2])])
+            candidate_axis = [h_(v[0])]+[s_(v[1])]+[v_(v[2])]
+            candidate = np.zeros((8,3), dtype=int)
+            for k in range(8): #Enumerate candidates
+                candidate[k][0] = candidate_axis[0][     k&1]
+                candidate[k][1] = candidate_axis[1][(k>>1)&1]
+                candidate[k][2] = candidate_axis[2][(k>>2)&1]
+            
+            #Calculate distance in HSV color space
+            distance = []
+            for k in candidate:
+                dh = min(abs(v[0]-vga_hue[k[0]]), 180-abs(v[0]-vga_hue[k[0]]))
+                ds = abs(v[1]-vga_sat[k[1]])
+                dv = abs(v[2]-vga_lightness[k[2]])
+                #distance.append(sqrt(dh*dh+ds*ds+dv*dv)) #Euclidean distance
+                distance.append(max(dh, ds, dv)) #Chebyshev distance
+            
+            #Pick the cantidate that have minimal distance
+            candidate_index = 0
+            for k, v in enumerate(distance):
+                if(v<distance[candidate_index]):
+                    candidate_index = k
+            
+            #print(distance, candidate_index)
+            img_hsv[i][j] = candidate[candidate_index]
 
 #Map the binary value
 img_bin = np.ndarray(shape=img_hsv.shape[0:2], dtype=np.uint8)
